@@ -14,6 +14,10 @@ packages:
   - ruby@1.9.3
   - ruby@2.0.0
   - ruby@2.1
+  - postgresql
+  - postgis
+  - redis
+  - rabbitmq
 script: |
   #upgrade to 14.04
   sudo apt-get update -y
@@ -36,16 +40,22 @@ script: |
   echo "gem: --no-rdoc --no-ri" >> $HOME/.gemrc
   echo "RAILS_ENV=test" | sudo tee -a /etc/environment
   echo "RACK_ENV=test" | sudo tee -a /etc/environment
-  # install packages
-  wget --quiet -O - http://www.rabbitmq.com/rabbitmq-signing-key-public.asc | sudo apt-key add -
-  echo "deb http://www.rabbitmq.com/debian/ testing main" > /etc/apt/sources.list.d/rabbitmq.list
+  # install common packages
+  sudo aptitude install -y tmux htop vim-nox software-properties-common curl wget unattended-upgrades bash-completion git lsof ufw ngrep autoconf bind9-host bison build-essential curl daemontools dnsutils ed git imagemagick iputils-tracepath libcurl4-openssl-dev libevent-dev libglib2.0-dev libjpeg-dev libjpeg62 libpng12-0 libpng12-dev libmagickcore-dev libmagickwand-dev libmcrypt-dev libmysqlclient-dev libpq-dev libsqlite3-dev libssl-dev libssl0.9.8 libxml2-dev libxslt-dev mercurial netcat-openbsd ruby2.0-dev ruby2.0 socat sqlite3 telnet zlib1g-dev postgresql-client-9.3 jpegoptim libv8-dev
+  # install redis
+  sudo aptitude install -y redis-server
+  #install postgresql + postgis
   wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
   echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -c | awk '{print $2}'`-pgdg main" >/etc/apt/sources.list.d/pgdg.list
-  sudo aptitude install -y tmux htop vim-nox software-properties-common curl wget unattended-upgrades bash-completion git lsof ufw ngrep autoconf bind9-host bison build-essential curl daemontools dnsutils ed git imagemagick iputils-tracepath libcurl4-openssl-dev libevent-dev libglib2.0-dev libjpeg-dev libjpeg62 libpng12-0 libpng12-dev libmagickcore-dev libmagickwand-dev libmcrypt-dev libmysqlclient-dev libpq-dev libsqlite3-dev libssl-dev libssl0.9.8 libxml2-dev libxslt-dev mercurial netcat-openbsd ruby2.0-dev ruby2.0 socat sqlite3 telnet zlib1g-dev postgresql-client-9.3 jpegoptim libv8-dev redis-server postgresql-9.3 postgresql-9.3-postgis-2.1 openjdk-7-jre-headless rabbitmq-server
+  sudo aptitude install -y  postgresql-9.3 postgresql-9.3-postgis-2.1
+  #install rabbitmq
+  wget --quiet -O - http://www.rabbitmq.com/rabbitmq-signing-key-public.asc | sudo apt-key add -
+  echo "deb http://www.rabbitmq.com/debian/ testing main" > /etc/apt/sources.list.d/rabbitmq.list
+  sudo aptitude install -y rabbitmq-server
   # fix permissions for home temp folder
   mkdir -p $HOME/tmp
   sudo chown ubuntu:ubuntu $HOME/tmp
   chmod 755 $HOME/tmp
 
 env:
-  WERCKER_RETHINKDB_PORT: 28015
+  TEST_ENV: 2
